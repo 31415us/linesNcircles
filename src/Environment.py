@@ -95,6 +95,7 @@ class Environment(object):
         tans = self.all_tangents()
         same_circle = {}
         neighbours = {}
+        orientation_map = {}
 
         for t in tans:
             if same_circle.get(t.c1):
@@ -106,6 +107,10 @@ class Environment(object):
                 same_circle.get(t.c2).add(t.p2)
             else:
                 same_circle[t.c2] = set([t.p2])
+
+        for t in tans:
+            orientation_map[t.p1] = t.orient1
+            orientation_map[t.p2] = t.orient2
 
         # filter out points on the half-circle defined by the moving direction
         #v_map = self.vmap()
@@ -125,12 +130,14 @@ class Environment(object):
             p1n = neighbours.get(t.p1) or set()
             p1n = p1n | same_circle[t.c1]
             p1n = p1n - set([t.p1])
+            p1n = {x for x in p1n if not same_orientation(t.orient1,orientation_map.get(x))}
             p1n.add(t.p2)
             neighbours[t.p1] = p1n
 
             p2n = neighbours.get(t.p2) or set()
             p2n = p1n | same_circle[t.c2]
             p2n = p1n - set([t.p2])
+            p2n = {x for x in p2n if not same_orientation(t.orient2,orientation_map.get(x))}
             p2n.add(t.p1)
             neighbours[t.p2] = p2n
 
@@ -261,3 +268,5 @@ def same_circle(circle_map,p1,p2):
 
     return None
 
+def same_orientation(o1,o2):
+    return o1 * o2 > 0

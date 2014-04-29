@@ -1,7 +1,7 @@
 
 from math import sqrt
 
-from Vec2D import Vec2D
+from Vec2D import Vec2D,orientation
 
 class Circle(object):
 
@@ -11,6 +11,9 @@ class Circle(object):
 
     def intersects(self,other):
         return (self.pos - other.pos).length() < (self.r + other.r)
+
+    def contains_circle(self,other):
+        return (self.pos - other.pos).length() < (self.r - other.r)
 
     def intersect_segment(self,segment):
 
@@ -28,6 +31,9 @@ class Circle(object):
         return False
 
     def bitangents(self,other):
+        if self.contains_circle(other) or other.contains_circle(self):
+            return []
+
         l = self.outertangents(other)
 
         if not self.intersects(other):
@@ -38,11 +44,11 @@ class Circle(object):
 
         return l
 
-    def contains(self,point):
+    def contains_point(self,point):
         return (self.pos - point).length() <= self.r
 
     def tangents(self,point):
-        if not self.contains(point):
+        if not self.contains_point(point):
             return self.outertangents(Circle(point,0))
         else:
             return []
@@ -86,9 +92,19 @@ class Circle(object):
 
         x22 = (b2*(b2*other.pos.x - a2*other.pos.y) - a2*c2)
         y22 = (a2*(-b2*other.pos.x + a2*other.pos.y) - b2*c2)
+
+        start1 = Vec2D(x11,y11)
+        end1 = Vec2D(x12,y12)
+        orient11 = orientation(end1,start1,self.pos) 
+        orient12 = orientation(start1,end1,other.pos)
+
+        start2 = Vec2D(x21,y21)
+        end2 = Vec2D(x22,y22)
+        orient21 = orientation(end2,start2,self.pos) 
+        orient22 = orientation(start2,end2,other.pos)
         
-        tan1 = Tangent(Vec2D(x11,y11),self,Vec2D(x12,y12),other)
-        tan2 = Tangent(Vec2D(x21,y21),self,Vec2D(x22,y22),other)
+        tan1 = Tangent(start1,self,orient11,end1,other,orient12)
+        tan2 = Tangent(start2,self,orient21,end2,other,orient22)
         return [tan1,tan2]
 
     def __str__(self):
@@ -108,11 +124,13 @@ class LineSegment(object):
 
 class Tangent(object):
     
-    def __init__(self,p1,c1,p2,c2):
+    def __init__(self,p1,c1,orient1,p2,c2,orient2):
         self.p1 = p1
         self.p2 = p2
+        self.orient1 = orient1
         self.c1 = c1
         self.c2 = c2
+        self.orient2 = orient2
         self.segment = LineSegment(self.p1,self.p2)
 
 def solve_quadratic(a,b,c):

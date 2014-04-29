@@ -76,9 +76,7 @@ def draw_tangent(t):
 
 def draw_env(env,start,end):
     for o in env.obstacles:
-        print o.circle
         draw_circle(o.circle)
-    print ""
 
     for t in env.all_tangents():
         draw_tangent(t)
