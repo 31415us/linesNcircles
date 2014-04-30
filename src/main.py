@@ -1,5 +1,5 @@
 
-import pygame,sys
+#import pygame,sys
 
 from Circle import Circle
 from Vec2D import Vec2D
@@ -37,7 +37,7 @@ def main():
 
     path = env.path(start,end)
 
-    clock = pygame.time.Clock()
+    #clock = pygame.time.Clock()
 
     paused = False
     while True:
@@ -88,11 +88,10 @@ def draw_env(env,start,end):
         draw_tangent(t)
 
 def draw_path(path):
-    #for p in path:
-    #    print p
-    #print ""
     for i in range(0,len(path) - 1):
-        pygame.draw.line(screen,blue,(int(path[i].x * px_per_meter),int(path[i].y*px_per_meter)),(int(path[i+1].x*px_per_meter),int(path[i+1].y*px_per_meter)),1)
+        start = path[i].start
+        end = path[i].end
+        pygame.draw.line(screen,blue,(int(start.x * px_per_meter),int(start.y*px_per_meter)),(int(end.x*px_per_meter),int(end.y*px_per_meter)),1)
 
 
 

@@ -1,7 +1,7 @@
 
 from Vec2D import Vec2D,orientation
 
-from Circle import Circle,LineSegment
+from Circle import Circle,LineSegment,CircleSegment
 
 from Globals import check_playground
 
@@ -93,49 +93,35 @@ class Environment(object):
             return [start,end]
 
         tans = self.all_tangents()
-        same_circle = {}
+        circle_map = {}
         neighbours = {}
         orientation_map = {}
 
         for t in tans:
-            if same_circle.get(t.c1):
-                same_circle.get(t.c1).add(t.p1)
+            if circle_map.get(t.c1):
+                circle_map.get(t.c1).add(t.p1)
             else:
-                same_circle[t.c1] = set([t.p1])
+                circle_map[t.c1] = set([t.p1])
 
-            if same_circle.get(t.c2):
-                same_circle.get(t.c2).add(t.p2)
+            if circle_map.get(t.c2):
+                circle_map.get(t.c2).add(t.p2)
             else:
-                same_circle[t.c2] = set([t.p2])
+                circle_map[t.c2] = set([t.p2])
 
         for t in tans:
             orientation_map[t.p1] = t.orient1
             orientation_map[t.p2] = t.orient2
 
-        # filter out points on the half-circle defined by the moving direction
-        #v_map = self.vmap()
-        #for c in same_circle:
-        #    v = v_map[c]
-        #    if v.length() == 0:
-        #        continue
-        #    v = v.normalized()
-        #    to_remove = set()
-        #    for p in same_circle[c]:
-        #        d = (p - c.pos).normalized()
-        #        if d.dot(v) > 0:
-        #            to_remove.add(p)
-        #    same_circle[c] = same_circle[c] - to_remove
-
         for t in tans:
             p1n = neighbours.get(t.p1) or set()
-            p1n = p1n | same_circle[t.c1]
+            p1n = p1n | circle_map[t.c1]
             p1n = p1n - set([t.p1])
             p1n = {x for x in p1n if not same_orientation(t.orient1,orientation_map.get(x))}
             p1n.add(t.p2)
             neighbours[t.p1] = p1n
 
             p2n = neighbours.get(t.p2) or set()
-            p2n = p1n | same_circle[t.c2]
+            p2n = p1n | circle_map[t.c2]
             p2n = p1n - set([t.p2])
             p2n = {x for x in p2n if not same_orientation(t.orient2,orientation_map.get(x))}
             p2n.add(t.p1)
@@ -154,12 +140,12 @@ class Environment(object):
 
             neighbours[start].add(p)
             neighbours[p] = set([start])
-            if not same_circle.get(c):
-                same_circle[c] = set()
-            for point in same_circle[c]:
+            if not circle_map.get(c):
+                circle_map[c] = set()
+            for point in circle_map[c]:
                 neighbours[point].add(p)
-            neighbours[p] = neighbours[p] | same_circle[c]
-            same_circle[c].add(p)
+            neighbours[p] = neighbours[p] | circle_map[c]
+            circle_map[c].add(p)
 
         neighbours[end] = set()
         for t in self.tangents_to_point(end):
@@ -174,21 +160,27 @@ class Environment(object):
 
             neighbours[end].add(p)
             neighbours[p] = set([end])
-            if not same_circle.get(c):
-                same_circle[c] = set()
-            for point in same_circle[c]:
+            if not circle_map.get(c):
+                circle_map[c] = set()
+            for point in circle_map[c]:
                 neighbours[point].add(p)
-            neighbours[p] = neighbours[p] | same_circle[c]
-            same_circle[c].add(p)
+            neighbours[p] = neighbours[p] | circle_map[c]
+            circle_map[c].add(p)
 
-        #for p in neighbours: 
-        #    print p
-        #    for n in neighbours[p]:
-        #        print "\t{m}".format(m = n)
+        nodes_on_path = aStar(start,end,circle_map,neighbours)
+        node_pairs = zip(nodes_on_path[:-1],nodes_on_path[1:])
 
-        #print ""
+        segs = []
+        for p in node_pairs:
+            s_seg = p[0]
+            e_seg = p[1]
+            c = same_circle(circle_map,s_seg,e_seg)
+            if c is None:
+                segs.append(LineSegment(s_seg,e_seg))
+            else:
+                segs.append(CircleSegment(s_seg,e_seg,c))
 
-        return aStar(start,end,same_circle,neighbours)
+        return segs 
 
 def aStar(start,end,circle_map,neighbours):
     visited = set()
@@ -211,6 +203,8 @@ def aStar(start,end,circle_map,neighbours):
             while parents.get(curr):
                 res.append(curr)
                 curr = parents[curr]
+            
+            res.append(curr)
 
             res.reverse()
             return res

@@ -122,6 +122,13 @@ class LineSegment(object):
         self.start = start
         self.end = end
 
+class CircleSegment(object):
+
+    def __init__(self,start,end,circle):
+        self.start = start
+        self.end = end
+        self.circle = circle
+
 class Tangent(object):
     
     def __init__(self,p1,c1,orient1,p2,c2,orient2):
