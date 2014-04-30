@@ -7,16 +7,16 @@ import Globals
 from Environment import Environment,Obstacle
 
 #pygame setup and vars
-px_per_meter = 400 
-width = Globals.PLAYGROUND_WIDTH * px_per_meter
-height = Globals.PLAYGROUND_HEIGHT * px_per_meter
-pygame.init()
-screen = pygame.display.set_mode((width,height))
-white = (255,255,255)
-black = (0,0,0)
-red = (255,0,0)
-green = (0,255,0)
-blue = (0,0,255)
+#px_per_meter = 400 
+#width = Globals.PLAYGROUND_WIDTH * px_per_meter
+#height = Globals.PLAYGROUND_HEIGHT * px_per_meter
+#pygame.init()
+#screen = pygame.display.set_mode((width,height))
+#white = (255,255,255)
+#black = (0,0,0)
+#red = (255,0,0)
+#green = (0,255,0)
+#blue = (0,0,255)
 
 def main():
 
@@ -39,59 +39,59 @@ def main():
 
     #clock = pygame.time.Clock()
 
-    paused = False
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:
-                    paused = not paused
+    #paused = False
+    #while True:
+    #    for event in pygame.event.get():
+    #        if event.type == pygame.QUIT:
+    #            pygame.quit()
+    #            sys.exit()
+    #        if event.type == pygame.KEYDOWN:
+    #            if event.key == pygame.K_p:
+    #                paused = not paused
 
-        if not paused:
+    #    if not paused:
 
-            screen.fill(black)
+    #        screen.fill(black)
 
-            env.update()
-            draw_env(env,start,end)
-            draw_path(env.path(start,end))
+    #        env.update()
+    #        draw_env(env,start,end)
+    #        draw_path(env.path(start,end))
 
-            #print clock.tick()
+    #        #print clock.tick()
 
-            pygame.display.update()
+    #        pygame.display.update()
 
 
-def draw_circle(c):
-    pygame.draw.circle(screen,green,(int(c.pos.x*px_per_meter),int(c.pos.y*px_per_meter)),int(c.r*px_per_meter),1)
-
-def draw_line(l):
-    pygame.draw.line(screen,red,(int(l[0].x * px_per_meter),int(l[0].y*px_per_meter)),(int(l[1].x*px_per_meter),int(l[1].y*px_per_meter)),1)
-
-def draw_segment(s):
-    draw_line((s.start,s.end))
-
-def draw_tangent(t):
-    draw_segment(t.segment)
-
-def draw_env(env,start,end):
-    for o in env.obstacles:
-        draw_circle(o.circle)
-
-    for t in env.all_tangents():
-        draw_tangent(t)
-
-    for t in env.tangents_to_point(start):
-        draw_tangent(t)
-
-    for t in env.tangents_to_point(end):
-        draw_tangent(t)
-
-def draw_path(path):
-    for i in range(0,len(path) - 1):
-        start = path[i].start
-        end = path[i].end
-        pygame.draw.line(screen,blue,(int(start.x * px_per_meter),int(start.y*px_per_meter)),(int(end.x*px_per_meter),int(end.y*px_per_meter)),1)
+#def draw_circle(c):
+#    pygame.draw.circle(screen,green,(int(c.pos.x*px_per_meter),int(c.pos.y*px_per_meter)),int(c.r*px_per_meter),1)
+#
+#def draw_line(l):
+#    pygame.draw.line(screen,red,(int(l[0].x * px_per_meter),int(l[0].y*px_per_meter)),(int(l[1].x*px_per_meter),int(l[1].y*px_per_meter)),1)
+#
+#def draw_segment(s):
+#    draw_line((s.start,s.end))
+#
+#def draw_tangent(t):
+#    draw_segment(t.segment)
+#
+#def draw_env(env,start,end):
+#    for o in env.obstacles:
+#        draw_circle(o.circle)
+#
+#    for t in env.all_tangents():
+#        draw_tangent(t)
+#
+#    for t in env.tangents_to_point(start):
+#        draw_tangent(t)
+#
+#    for t in env.tangents_to_point(end):
+#        draw_tangent(t)
+#
+#def draw_path(path):
+#    for i in range(0,len(path) - 1):
+#        start = path[i].start
+#        end = path[i].end
+#        pygame.draw.line(screen,blue,(int(start.x * px_per_meter),int(start.y*px_per_meter)),(int(end.x*px_per_meter),int(end.y*px_per_meter)),1)
 
 
 
