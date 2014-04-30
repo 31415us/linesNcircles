@@ -90,7 +90,7 @@ class Environment(object):
     def path(self,start,end):
 
         if not self.intersects_any(LineSegment(start,end)):
-            return [start,end]
+            return [LineSegment(start,end)]
 
         tans = self.all_tangents()
         circle_map = {}
