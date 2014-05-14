@@ -45,7 +45,7 @@ class TrajectoryHandler(SocketServer.BaseRequestHandler):
                 pos = Vec2D(float(o[0])/1000,float(o[1])/1000)
                 speed = Vec2D(float(o[2])/1000,float(o[3])/1000)
                 r = float(o[4])/1000
-                obstacle_list.append(Obstacle(Circle(pos,r),speed))
+                obstacle_list.append(Obstacle(Circle(pos,r + Globals.ROBOT_RADIUS),speed))
 
             traj = trajectory(start,v_start,end,v_end,delta_t,obstacle_list)[:nb_of_waypoints]
 
@@ -60,10 +60,10 @@ class TrajectoryHandler(SocketServer.BaseRequestHandler):
                 t = int(w[2] * 1000)
                 response.append([x,y,vx,vy,t])
 
-            self.request.sendall(json.dumps(response))
+            self.request.sendall(json.dumps(response).strip())
         except Exception, e:
             print "Exception wtf?", e
 
 
-server = TrajectoryServer(('127.0.0.1',1337),TrajectoryHandler)
+server = TrajectoryServer(('0.0.0.0',1337),TrajectoryHandler)
 server.serve_forever()
