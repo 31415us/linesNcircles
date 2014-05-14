@@ -25,17 +25,23 @@ def main():
     c3 = Circle(Vec2D(0.2,0.22),0.1)
     c4 = Circle(Vec2D(0.4,0.6),0.2)
 
+    c5 = Circle(Vec2D(1.5,1),0.3)
+    c6 = Circle(Vec2D(0.75,0.5),0.3)
+
+    null = Vec2D(0,0)
+
     circles = [c1,c2,c3,c4]
 
-    env = Environment([Obstacle(c1,Vec2D(-0.0001,0)),Obstacle(c2,Vec2D(0,-0.0001)),Obstacle(c3,Vec2D(0.0001,0)),Obstacle(c4,Vec2D(0,0.0001))])
+    #env = Environment([Obstacle(c5,null),Obstacle(c6,null)])
+    #env = Environment([Obstacle(c1,Vec2D(-0.0001,0)),Obstacle(c2,Vec2D(0,-0.0001)),Obstacle(c3,Vec2D(0.0001,0)),Obstacle(c4,Vec2D(0,0.0001))])
 
-    #env = Environment([Obstacle(c1,Vec2D(0.0000,0.0001)),Obstacle(c4,Vec2D(0,-0.0001))])
+    env = Environment([Obstacle(c1,Vec2D(0.0000,0.0001)),Obstacle(c4,Vec2D(0,-0.0001))])
     #env = Environment([Obstacle(c1,Vec2D(0,-0.0001))])
 
     start = Vec2D(0.01,0.01)
     end = Vec2D(2.99,1.99)
 
-    path = env.path(start,end)
+    path = env.path(start,null,end,null,0.1)
 
     #clock = pygame.time.Clock()
 
@@ -55,7 +61,7 @@ def main():
 
             env.update()
             draw_env(env,start,end)
-            draw_path(env.path(start,end))
+            draw_path(env.path(start,null,end,null,0.1))
 
             #print clock.tick()
 
@@ -88,10 +94,19 @@ def draw_env(env,start,end):
         draw_tangent(t)
 
 def draw_path(path):
-    for seg in path:
-        start = seg.start
-        end = seg.end
-        pygame.draw.line(screen,blue,(int(start.x * px_per_meter),int(start.y*px_per_meter)),(int(end.x*px_per_meter),int(end.y*px_per_meter)),1)
+
+    prev = path[0]
+
+    for curr in path[1:]:
+        pygame.draw.line(screen,blue,(int(prev[0].x * px_per_meter),int(prev[0].y*px_per_meter)),(int(curr[0].x*px_per_meter),int(curr[0].y*px_per_meter)),1)
+        prev = curr
+
+    #for seg in path:
+    #    #print seg
+    #    start = seg.start
+    #    end = seg.end
+    #    pygame.draw.line(screen,blue,(int(start.x * px_per_meter),int(start.y*px_per_meter)),(int(end.x*px_per_meter),int(end.y*px_per_meter)),1)
+    #print "\n"
 
 
 
