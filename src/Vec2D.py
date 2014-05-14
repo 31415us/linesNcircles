@@ -1,5 +1,5 @@
 
-from math import sqrt
+from math import sqrt,cos,sin
 
 class Vec2D(object):
 
@@ -22,6 +22,21 @@ class Vec2D(object):
         d = self.length()
         return self * (1/d)
 
+    def rotate(self,angle,translation):
+
+        centered = self - translation
+
+        cs = cos(angle)
+        sn = sin(angle) 
+
+        nX = cs * centered.x - sn * centered.y
+        nY = sn * centered.x + cs * centered.y
+
+        final = Vec2D(nX,nY) + translation
+
+        return final
+
+
     def __neg__(self):
         return Vec2D(-self.x,-self.y)
 
@@ -39,6 +54,9 @@ class Vec2D(object):
 
     def __eq__(self,other):
         return ((self - other).length() < Vec2D.EPSILON)
+
+    def __ne__(self,other):
+        return not self == other
 
 def orientation(v1,v2,v3):
     v12 = v2 - v1
