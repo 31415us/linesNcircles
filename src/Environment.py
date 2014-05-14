@@ -90,7 +90,7 @@ class Environment(object):
     def path(self,start,v_start,end,v_end,delta_t):
 
         if not self.intersects_any(LineSegment(start,end)):
-            return discretize_trajectory([LineSegment(start,end)],Vec2D(0,0),Vec2D(0,0),0.1)
+            return discretize_trajectory([LineSegment(start,end)],v_start,v_end,delta_t)
 
         tans = self.all_tangents()
         circle_map = {}

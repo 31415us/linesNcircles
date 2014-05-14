@@ -38,8 +38,8 @@ def main():
 
     circles = [c1,c2,c3,c4]
 
-    start = Vec2D(0.01,0.01)
-    end = Vec2D(2.99,1.99)
+    start = Vec2D(0.17,0.17)
+    end = Vec2D(0.3,0.3)
 
     obstacles = []
 
