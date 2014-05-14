@@ -1,7 +1,9 @@
 
-from math import sqrt
+from math import sqrt,acos,pi
 
 from Vec2D import Vec2D,orientation
+
+import Globals
 
 class Circle(object):
 
@@ -116,18 +118,114 @@ class Circle(object):
     def __eq__(self,other):
         return (self.pos == other.pos and abs(self.r - other.r) < Vec2D.EPSILON)
 
+    def __ne__(self,other):
+        return not self == other
+
+    def tangent_vector(self,p,orientation):
+        vr = (p - self.pos).normalized()
+
+        if orientation < 0:
+            return Vec2D(-vr.y,vr.x)
+        else:
+            return Vec2D(vr.y,-vr.x)
+
 class LineSegment(object):
     
     def __init__(self,start,end):
         self.start = start
         self.end = end
 
+    def __str__(self):
+        return "LineSegment: {start} -> {end}".format(start=(str(self.start)),end=(str(self.end)))
+
+    def length(self):
+        return (self.end - self.start).length()
+
+    def tan(self,pt):
+        return (self.end - self.start).normalized()
+
+    def next_pos(self,pt,dist):
+        return pt + self.tan(pt) * dist
+
+
 class CircleSegment(object):
 
-    def __init__(self,start,end,circle):
+    def __init__(self,start,end,circle,orientation):
         self.start = start
         self.end = end
         self.circle = circle
+        self.orientation = orientation
+
+    def __str__(self):
+        return "CircleSegment: {start} -> {end} on {circle}".format(start=(str(self.start)),end=(str(self.end)),circle=(str(self.circle)))
+
+    def length(self):
+        apparent_orientation = orientation(self.start,self.end,self.circle.pos)
+
+        v1 = (self.start - self.circle.pos).normalized()
+        v2 = (self.end - self.circle.pos).normalized()
+
+        angle = acos(v1.dot(v2))
+
+        if self.orientation * apparent_orientation < 0:
+            angle = 2*pi - angle
+
+        return angle * self.circle.r
+
+    def tan(self,pt):
+        return self.circle.tangent_vector(pt,self.orientation).normalized()
+
+    def next_pos(self,pt,dist):
+        angle = (dist / self.circle.r) 
+        if self.orientation < 0:
+            angle = -angle
+        return pt.rotate(angle,self.circle.pos)
+        
+
+def discretize(segment,d_travelled,time_stamp,v_init,acc_until,dec_from,delta_t):
+        current_pos = segment.start
+        current_v = v_init
+        current_speed_vector = segment.tan(segment.start) * v_init
+        current_time_stamp = time_stamp
+        current_d_travelled = d_travelled
+        d_remaining = segment.length()
+
+        res = []
+
+        res.append((current_pos,current_speed_vector,current_time_stamp))
+
+        dt = delta_t
+
+        while d_remaining > 0:
+
+            delta_dist = (current_v * dt)
+
+            if delta_dist > d_remaining:
+                dt = d_remaining / current_v
+                delta_dist = d_remaining
+            else:
+                dt = delta_t
+
+            current_pos = segment.next_pos(current_pos,delta_dist)
+
+            if current_d_travelled < acc_until:
+                current_v = current_v + Globals.ROBOT_MAX_ACC * dt
+            elif current_d_travelled < dec_from:
+                current_v = Globals.ROBOT_MAX_V
+            else:
+                current_v = current_v - Globals.ROBOT_MAX_ACC * dt
+
+            current_speed_vector = segment.tan(current_pos) * current_v
+
+            current_time_stamp = current_time_stamp + dt
+
+            d_remaining = d_remaining - delta_dist
+
+            res.append((current_pos,current_speed_vector,current_time_stamp))
+
+        return res
+
+
 
 class Tangent(object):
     

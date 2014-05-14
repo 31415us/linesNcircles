@@ -1,9 +1,9 @@
 
 from Vec2D import Vec2D,orientation
 
-from Circle import Circle,LineSegment,CircleSegment
+from Circle import Circle,LineSegment,CircleSegment,discretize
 
-from Globals import check_playground
+import Globals
 
 from heapdict import heapdict
 
@@ -54,7 +54,7 @@ class Environment(object):
 
         result = []                
         for t in tangents:
-            if check_playground(t.p1) and check_playground(t.p2):
+            if Globals.check_playground(t.p1) and Globals.check_playground(t.p2):
                 result.append(t)
                 
         return result
@@ -75,7 +75,7 @@ class Environment(object):
 
         result = []
         for t in acc:
-            if check_playground(t.p1) and check_playground(t.p2):
+            if Globals.check_playground(t.p1) and Globals.check_playground(t.p2):
                 result.append(t)
 
         return result
@@ -87,10 +87,10 @@ class Environment(object):
 
         return False
 
-    def path(self,start,end):
+    def path(self,start,v_start,end,v_end,delta_t):
 
         if not self.intersects_any(LineSegment(start,end)):
-            return [LineSegment(start,end)]
+            return discretize_trajectory([LineSegment(start,end)],Vec2D(0,0),Vec2D(0,0),0.1)
 
         tans = self.all_tangents()
         circle_map = {}
@@ -129,6 +129,8 @@ class Environment(object):
 
         neighbours[start] = set()
         for t in self.tangents_to_point(start):
+            orientation_map[t.p1] = t.orient1
+            orientation_map[t.p2] = t.orient2
             if t.p1 == start:
                 p = t.p2
                 c = t.c2
@@ -149,6 +151,8 @@ class Environment(object):
 
         neighbours[end] = set()
         for t in self.tangents_to_point(end):
+            orientation_map[t.p1] = t.orient1
+            orientation_map[t.p2] = t.orient2
             if t.p1 == end:
                 p = t.p2
                 c = t.c2
@@ -178,9 +182,9 @@ class Environment(object):
             if c is None:
                 segs.append(LineSegment(s_seg,e_seg))
             else:
-                segs.append(CircleSegment(s_seg,e_seg,c))
+                segs.append(CircleSegment(s_seg,e_seg,c,orientation_map[s_seg]))
 
-        return segs 
+        return discretize_trajectory(segs,v_start,v_end,delta_t)
 
 def aStar(start,end,circle_map,neighbours):
     visited = set()
@@ -264,3 +268,61 @@ def same_circle(circle_map,p1,p2):
 
 def same_orientation(o1,o2):
     return o1 * o2 > 0
+
+def discretize_trajectory(segments,v_start,v_end,delta_t):
+    errors = []
+    vs = v_start.dot((segments[0].start - segments[0].end).normalized())
+    ve = v_end.length()
+    traj_length = 0
+    for seg in segments:
+        traj_length = traj_length + seg.length()
+
+    acc_until_dist = 0
+    decc_from_dist = 0
+
+    t_adj = abs(vs - ve)/Globals.ROBOT_MAX_ACC
+    d_adj = min(vs,ve)*t_adj + 0.5 * Globals.ROBOT_MAX_ACC * t_adj * t_adj
+
+    t_acc = (Globals.ROBOT_MAX_V - vs)/Globals.ROBOT_MAX_ACC
+    d_acc = vs * t_acc + 0.5 * Globals.ROBOT_MAX_ACC * t_acc * t_acc
+    
+    t_dec = (Globals.ROBOT_MAX_V - ve)/Globals.ROBOT_MAX_ACC
+    d_decc = ve * t_dec + 0.5 * Globals.ROBOT_MAX_ACC * t_dec * t_dec
+
+    if d_adj > traj_length :
+        if vs < ve :
+            acc_until_dist = traj_length
+            decc_from_dist = traj_length + 1
+            errors.append(Err("Cannot accelerate to end-velocity"))
+        else:
+            acc_until_dist = 0
+            decc_from_dist = traj_length
+            errors.append(Err("Cannot decelerate to end-velocity"))
+    elif t_acc + t_dec > traj_length:
+        d_tmp = (traj_length - d_adj)/2
+        acc_until_dist = d_tmp
+        decc_from_dist = d_tmp
+    else:
+        acc_until_dist = d_acc
+        decc_from_dist = traj_length - d_decc
+
+    current_d = 0
+    current_t = 0 
+    current_v = vs
+    res = []
+    for seg in segments:
+        res = res + discretize(seg,current_d,current_t,current_v,acc_until_dist,decc_from_dist,delta_t)
+        (pos,v,time_stamp) = res[-1]
+        current_d = current_d + seg.length()
+        current_t = time_stamp
+        current_v = v.length()
+
+    return res
+
+class Err(object):
+
+    def __init__(self,msg):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
