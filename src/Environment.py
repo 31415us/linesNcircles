@@ -251,6 +251,7 @@ def discretize(segment,d_travelled,time_stamp,v_init,acc_until,dec_from,delta_t)
                 dt = delta_t
 
             current_pos = segment.next_pos(current_pos,delta_dist)
+            current_d_travelled = current_d_travelled + delta_dist
 
             if current_d_travelled < acc_until:
                 current_v = current_v + Globals.ROBOT_MAX_ACC * dt
