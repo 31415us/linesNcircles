@@ -1,25 +1,13 @@
 
 from Vec2D import Vec2D,orientation
 
-from Circle import Circle,LineSegment,CircleSegment,discretize
+from Circle import Circle,LineSegment,CircleSegment,Obstacle
 
 import Globals
 
 from heapdict import heapdict
 
 from math import acos,pi
-
-class Obstacle(object):
-
-    def __init__(self,circle,v):
-        self.circle = circle
-        self.v = v
-
-    def update(self):
-        self.circle = self.circle + self.v
-
-    def __eq__(self,other):
-        return (self.circle == other.circle)
 
 class Environment(object):
 
@@ -175,16 +163,27 @@ class Environment(object):
         node_pairs = zip(nodes_on_path[:-1],nodes_on_path[1:])
 
         segs = []
+        last_was_circular = False
+        last_orientation = 0
         for p in node_pairs:
             s_seg = p[0]
             e_seg = p[1]
             c = same_circle(circle_map,s_seg,e_seg)
             if c is None:
                 segs.append(LineSegment(s_seg,e_seg))
+                last_was_circular = False
+                last_orientation = 0
             else:
-                segs.append(CircleSegment(s_seg,e_seg,c,orientation_map[s_seg]))
+                if last_was_circular:
+                    o = last_orientation
+                else:
+                    o = orientation_map[s_seg]
+                    last_orientation = o
+                segs.append(CircleSegment(s_seg,e_seg,c,o))
+                last_was_circular = True
 
         return discretize_trajectory(segs,v_start,v_end,delta_t)
+
 
 def aStar(start,end,circle_map,neighbours):
     visited = set()
@@ -227,6 +226,49 @@ def aStar(start,end,circle_map,neighbours):
 
     return []
 
+def discretize(segment,d_travelled,time_stamp,v_init,acc_until,dec_from,delta_t):
+        current_pos = segment.start
+        current_v = v_init
+        current_speed_vector = segment.tan(segment.start) * v_init
+        current_time_stamp = time_stamp
+        current_d_travelled = d_travelled
+        d_remaining = segment.length()
+
+        res = []
+
+        res.append((current_pos,current_speed_vector,current_time_stamp))
+
+        dt = delta_t
+
+        while d_remaining > 0:
+
+            delta_dist = (current_v * dt)
+
+            if delta_dist > d_remaining:
+                dt = d_remaining / current_v
+                delta_dist = d_remaining
+            else:
+                dt = delta_t
+
+            current_pos = segment.next_pos(current_pos,delta_dist)
+
+            if current_d_travelled < acc_until:
+                current_v = current_v + Globals.ROBOT_MAX_ACC * dt
+            elif current_d_travelled < dec_from:
+                current_v = Globals.ROBOT_MAX_V
+            else:
+                current_v = current_v - Globals.ROBOT_MAX_ACC * dt
+
+            current_speed_vector = segment.tan(current_pos) * current_v
+
+            current_time_stamp = current_time_stamp + dt
+
+            d_remaining = d_remaining - delta_dist
+
+            res.append((current_pos,current_speed_vector,current_time_stamp))
+
+        return res
+
 def edge_length(p1,p2,circle_map,parents):
 
     c = same_circle(circle_map,p1,p2)
@@ -242,19 +284,15 @@ def edge_length(p1,p2,circle_map,parents):
 
     parent_orientation = orientation(pred,tan,c.pos)
     circle_orientation = orientation(p1,p2,c.pos)
-    same_orientation = parent_orientation * circle_orientation > 0
 
     v1 = (p1 - c.pos).normalized()
     v2 = (p2 - c.pos).normalized()
 
     dp = v1.dot(v2)
     
-    try:
-        angle = acos(dp)
-    except:
-        return 100.0
+    angle = acos(dp)
 
-    if not same_orientation:
+    if not same_orientation(parent_orientation,circle_orientation):
         angle = 2*pi - angle
 
     return angle * c.r
