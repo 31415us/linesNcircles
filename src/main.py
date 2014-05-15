@@ -23,6 +23,10 @@ black = (0,0,0)
 red = (255,0,0)
 green = (0,255,0)
 blue = (0,0,255)
+yellow = (255,255,0)
+cyan = (0,255,255)
+purple = (255,0,255)
+color_list = [red,green,blue,yellow,cyan,purple,white,black]
 
 def main():
 
@@ -38,8 +42,8 @@ def main():
 
     circles = [c1,c2,c3,c4]
 
-    start = Vec2D(0.17,0.17)
-    end = Vec2D(0.3,0.3)
+    start = Vec2D(0.4,0.95)
+    end = Vec2D(2.0,1.05)
 
     obstacles = []
 
@@ -69,8 +73,8 @@ def main():
 
             s.close()
 
+            draw_env(Environment(Globals.STATIC_OBSTACLES),start,end)
             draw_path(traj)
-
 
             #print clock.tick()
 

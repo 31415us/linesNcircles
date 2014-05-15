@@ -5,19 +5,12 @@ import json
 import Globals
 
 from Vec2D import Vec2D
-from Environment import Environment,Obstacle
-from Circle import Circle
+from Environment import Environment
+from Circle import Circle,Obstacle
 
-middle_circle = Obstacle(Circle(Vec2D(1.5,0.95),0.15 + Globals.ROBOT_RADIUS),Vec2D(0,0))
-tree1 = Obstacle(Circle(Vec2D(0,1.3),0.12 + Globals.ROBOT_RADIUS),Vec2D(0,0))
-tree2 = Obstacle(Circle(Vec2D(0.7,2.0),0.12 + Globals.ROBOT_RADIUS),Vec2D(0,0))
-tree3 = Obstacle(Circle(Vec2D(2.3,2.0),0.12 + Globals.ROBOT_RADIUS),Vec2D(0,0))
-tree4 = Obstacle(Circle(Vec2D(3,1.3),0.12 + Globals.ROBOT_RADIUS),Vec2D(0,0))
-
-static_obstacles = [middle_circle,tree1,tree2,tree3,tree4]
 
 def trajectory(start,v_start,end,v_end,delta_t,obstacles):
-    obs = obstacles + static_obstacles
+    obs = obstacles + Globals.STATIC_OBSTACLES
     env = Environment(obs)
     return env.path(start,v_start,end,v_end,delta_t)
 
@@ -59,6 +52,7 @@ class TrajectoryHandler(SocketServer.BaseRequestHandler):
                 vy = int(v.y * 1000)
                 t = int(w[2] * 1000)
                 response.append([x,y,vx,vy,t])
+
 
             self.request.sendall(json.dumps(response).strip())
         except Exception, e:

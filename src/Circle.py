@@ -3,8 +3,6 @@ from math import sqrt,acos,pi
 
 from Vec2D import Vec2D,orientation
 
-import Globals
-
 class Circle(object):
 
     def __init__(self,pos,r):
@@ -181,52 +179,6 @@ class CircleSegment(object):
             angle = -angle
         return pt.rotate(angle,self.circle.pos)
         
-
-def discretize(segment,d_travelled,time_stamp,v_init,acc_until,dec_from,delta_t):
-        current_pos = segment.start
-        current_v = v_init
-        current_speed_vector = segment.tan(segment.start) * v_init
-        current_time_stamp = time_stamp
-        current_d_travelled = d_travelled
-        d_remaining = segment.length()
-
-        res = []
-
-        res.append((current_pos,current_speed_vector,current_time_stamp))
-
-        dt = delta_t
-
-        while d_remaining > 0:
-
-            delta_dist = (current_v * dt)
-
-            if delta_dist > d_remaining:
-                dt = d_remaining / current_v
-                delta_dist = d_remaining
-            else:
-                dt = delta_t
-
-            current_pos = segment.next_pos(current_pos,delta_dist)
-
-            if current_d_travelled < acc_until:
-                current_v = current_v + Globals.ROBOT_MAX_ACC * dt
-            elif current_d_travelled < dec_from:
-                current_v = Globals.ROBOT_MAX_V
-            else:
-                current_v = current_v - Globals.ROBOT_MAX_ACC * dt
-
-            current_speed_vector = segment.tan(current_pos) * current_v
-
-            current_time_stamp = current_time_stamp + dt
-
-            d_remaining = d_remaining - delta_dist
-
-            res.append((current_pos,current_speed_vector,current_time_stamp))
-
-        return res
-
-
-
 class Tangent(object):
     
     def __init__(self,p1,c1,orient1,p2,c2,orient2):
@@ -237,6 +189,18 @@ class Tangent(object):
         self.c2 = c2
         self.orient2 = orient2
         self.segment = LineSegment(self.p1,self.p2)
+
+class Obstacle(object):
+
+    def __init__(self,circle,v):
+        self.circle = circle
+        self.v = v
+
+    def update(self):
+        self.circle = self.circle + self.v
+
+    def __eq__(self,other):
+        return (self.circle == other.circle)
 
 def solve_quadratic(a,b,c):
     det = b*b - 4*a*c
