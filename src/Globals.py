@@ -16,7 +16,7 @@ PLAYGROUND_HEIGHT = 2
 
 DELTA_T = 0.1 # s
 
-MIDDLE_CIRCLE = Obstacle(Circle(Vec2D(1.5,1.05),0.15 + ROBOT_RADIUS),Vec2D(0,0))
+MIDDLE_CIRCLE = Obstacle(Circle(Vec2D(1.5,1.05),0.4 + ROBOT_RADIUS),Vec2D(0,0))
 TREE1 = Obstacle(Circle(Vec2D(0,1.3),0.12 + ROBOT_RADIUS),Vec2D(0,0))
 TREE2 = Obstacle(Circle(Vec2D(0.7,2.0),0.12 + ROBOT_RADIUS),Vec2D(0,0))
 TREE3 = Obstacle(Circle(Vec2D(2.3,2.0),0.12 + ROBOT_RADIUS),Vec2D(0,0))
