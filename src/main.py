@@ -42,8 +42,8 @@ def main():
 
     circles = [c1,c2,c3,c4]
 
-    start = Vec2D(0.4,0.95)
-    end = Vec2D(2.0,1.05)
+    start = Vec2D(2.5,1.0)
+    end = Vec2D(0.5,1.0)
 
     obstacles = []
 
@@ -67,9 +67,14 @@ def main():
 
             s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             s.connect(('127.0.0.1',1337))
-            s.send(json.dumps(to_request(start,null,end,null,0.1,1000,obstacles)))
+            s.send(json.dumps(to_request(start,null,end,null,0.3,1000,obstacles)))
 
-            traj = traj_from_response(json.loads(s.recv(4096).strip()))
+            json_response = json.loads(s.recv(4096).strip())
+
+            #print json.dumps(json_response,indent=2)
+            #print
+
+            traj = traj_from_response(json_response)
 
             s.close()
 
