@@ -160,6 +160,7 @@ class Environment(object):
             circle_map[c].add(p)
 
         nodes_on_path = aStar(start,end,circle_map,neighbours)
+
         node_pairs = zip(nodes_on_path[:-1],nodes_on_path[1:])
 
         segs = []
@@ -290,7 +291,12 @@ def edge_length(p1,p2,circle_map,parents):
     v2 = (p2 - c.pos).normalized()
 
     dp = v1.dot(v2)
-    
+
+    if dp < 0:
+        dp = dp + Vec2D.EPSILON
+    else:
+        dp = dp - Vec2D.EPSILON
+
     angle = acos(dp)
 
     if not same_orientation(parent_orientation,circle_orientation):

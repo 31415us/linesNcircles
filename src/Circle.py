@@ -163,7 +163,14 @@ class CircleSegment(object):
         v1 = (self.start - self.circle.pos).normalized()
         v2 = (self.end - self.circle.pos).normalized()
 
-        angle = acos(v1.dot(v2))
+        dp = v1.dot(v2)
+
+        if dp < 0:
+            dp = dp + Vec2D.EPSILON
+        else:
+            dp = dp - Vec2D.EPSILON
+
+        angle = acos(dp)
 
         if self.orientation * apparent_orientation < 0:
             angle = 2*pi - angle
