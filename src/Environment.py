@@ -310,7 +310,7 @@ def same_orientation(o1,o2):
 
 def discretize_trajectory(segments,v_start,v_end,delta_t):
     errors = []
-    vs = v_start.dot((segments[0].start - segments[0].end).normalized())
+    vs = v_start.dot(segments[0].tan(segments[0].start))
     ve = v_end.length()
     traj_length = 0
     for seg in segments:
