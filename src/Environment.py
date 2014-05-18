@@ -260,6 +260,8 @@ def discretize(segment,d_travelled,time_stamp,v_init,acc_until,dec_from,delta_t)
                 current_v = Globals.ROBOT_MAX_V
             else:
                 current_v = current_v - Globals.ROBOT_MAX_ACC * dt
+                if current_v < 0:
+                    return res
 
             current_speed_vector = segment.tan(current_pos) * current_v
 
