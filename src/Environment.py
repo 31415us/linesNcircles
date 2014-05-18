@@ -80,6 +80,10 @@ class Environment(object):
         if start == end:
             return []
 
+        for o in self.obstacles:
+            if o.circle.contains_point(start) or o.circle.contains_point(end):
+                return []
+
         if not self.intersects_any(LineSegment(start,end)):
             return discretize_trajectory([LineSegment(start,end)],v_start,v_end,delta_t)
 
