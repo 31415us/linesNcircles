@@ -84,6 +84,9 @@ class Environment(object):
             if o.circle.contains_point(start) or o.circle.contains_point(end):
                 return []
 
+        if not Globals.check_playground(start) or not Globals.check_playground(end):
+            return []
+
         if not self.intersects_any(LineSegment(start,end)):
             return discretize_trajectory([LineSegment(start,end)],v_start,v_end,delta_t)
 
