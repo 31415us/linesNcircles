@@ -78,7 +78,6 @@ class Environment(object):
     def path(self,start,v_start,end,v_end,delta_t):
 
         if start == end:
-            print "meow"
             return []
 
         if not self.intersects_any(LineSegment(start,end)):
