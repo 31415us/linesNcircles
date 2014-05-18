@@ -82,9 +82,11 @@ class Environment(object):
 
         for o in self.obstacles:
             if o.circle.contains_point(start) or o.circle.contains_point(end):
+                print "start or end inside obstacle"
                 return []
 
         if not Globals.check_playground(start) or not Globals.check_playground(end):
+            print "start or end outside playground"
             return []
 
         if not self.intersects_any(LineSegment(start,end)):
