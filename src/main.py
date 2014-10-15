@@ -42,11 +42,10 @@ def main():
 
     circles = [c1,c2,c3,c4]
 
-    start = Vec2D(2.5,1.0)
-    end = Vec2D(0.5,1.0)
+    start = Vec2D(0.6,0.9)
+    end = Vec2D(2.4,0.9)
 
     obstacles = []
-
 
     #clock = pygame.time.Clock()
 
@@ -67,7 +66,7 @@ def main():
 
             s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             s.connect(('127.0.0.1',1337))
-            s.send(json.dumps(to_request(start,null,end,null,0.3,1000,obstacles)))
+            s.send(json.dumps(to_request(start,null,end,null,0.05,120,obstacles)))
 
             json_response = json.loads(s.recv(4096).strip())
 
@@ -138,6 +137,9 @@ def draw_env(env,start,end):
         draw_tangent(t)
 
 def draw_path(path):
+
+    if not path:
+        return
 
     prev = path[0]
 
